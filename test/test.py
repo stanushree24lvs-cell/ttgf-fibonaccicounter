@@ -7,34 +7,47 @@ from cocotb.triggers import ClockCycles
 
 
 @cocotb.test()
-async def test_project(dut):
-    dut._log.info("Start")
+async def test_fibonacci_counter(dut):
+    dut._log.info("Starting Fibonacci counter test")
 
-    # Set the clock period to 10 us (100 KHz)
+    # ----------------------------------------------------
+    # Clock: 100 KHz (10 us period)
+    # ----------------------------------------------------
     clock = Clock(dut.clk, 10, unit="us")
     cocotb.start_soon(clock.start())
 
+    # ----------------------------------------------------
     # Reset
-    dut._log.info("Reset")
+    # ----------------------------------------------------
     dut.ena.value = 1
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     dut.rst_n.value = 0
-    await ClockCycles(dut.clk, 10)
+
+    await ClockCycles(dut.clk, 5)
     dut.rst_n.value = 1
 
-    dut._log.info("Test project behavior")
+    # Enable Fibonacci counter (ui_in[0] = 1)
+    dut.ui_in.value = 0x01
 
-    # Set the input values you want to test
-    dut.ui_in.value = 20
-    dut.uio_in.value = 30
+    # ----------------------------------------------------
+    # Expected Fibonacci sequence (mod 256)
+    # a=0, b=1 initially → output is b
+    # ----------------------------------------------------
+    expected = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
 
-    # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
+    actual = []
 
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 50
+    for i in range(len(expected)):
+        await ClockCycles(dut.clk, 1)
+        actual.append(int(dut.uo_out.value))
 
-    # Keep testing the module by changing the input values, waiting for
-    # one or more clock cycles, and asserting the expected output values.
+    dut._log.info(f"Expected: {expected}")
+    dut._log.info(f"Actual  : {actual}")
+
+    # ----------------------------------------------------
+    # Check correctness
+    # ----------------------------------------------------
+    assert actual == expected, "Fibonacci sequence mismatch!"
+
+    dut._log.info("Fibonacci counter test PASSED")
