@@ -9,12 +9,12 @@ You can also include images in this folder and reference them in the markdown. E
 
 ## How it works
 
-Explain how your project works
+This project implements an 8-bit Fibonacci sequence generator using simple register-based feedback logic.
 
-## How to test
+Inside the design, two internal registers (`a` and `b`) are used:
 
-Explain how to use your project
+- On every rising clock edge:
+  - `a <= b`
+  - `b <= a + b` (modulo 256 due to 8-bit overflow)
 
-## External hardware
-
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+This creates a Fibonacci-like sequence in hardware:
